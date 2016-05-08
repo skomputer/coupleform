@@ -1,0 +1,71 @@
+<html>
+  <head>
+    <title>coupleform</title>
+    <meta name="viewport" content="width=device-width">
+  </head>
+
+  <body>
+    You: <span id="self"></span><br />
+    Peer: <input id="other" type="text" /><br />
+    <button id="connect">Connect</button><br />
+
+    <video id="display" autoplay></video>
+
+    <script src="peer.js"></script>
+    <script>
+      function getParam(name) {
+        var match = RegExp("[?&]" + name + "=([^&]*)").exec(window.location.search);
+        return match && decodeURIComponent(match[1].replace(/\+/g, " "));
+      };
+
+      function generateId() {
+        return Math.random().toString(36).substr(2, 5);
+      }
+
+      var self = getParam("self") || generateId();
+      var peer = new Peer(self, { 
+        host: "localhost",
+        port: 9000,
+        // key: "o79zo9aet7vf5hfr", 
+        secure: true,
+         debug: 3 
+       });
+
+      var video = document.getElementById("display");
+
+      document.getElementById("self").innerHTML = self;
+
+      document.getElementById("connect").addEventListener("click", function() {
+        var other = document.getElementById("other").value;
+
+        if (!other) {
+          alert("You must enter peer ID");
+          return;
+        }
+
+        navigator.webkitGetUserMedia({ video: true }, function(stream) {
+          var call = peer.call(other, stream);
+
+          call.on("stream", function(remoteStream) {
+            video.src = window.webkitURL.createObjectURL(remoteStream);
+          });
+        }, function(err) {
+          console.log('Failed to get local stream', err);
+        });
+      });
+
+
+      peer.on("call", function(call) {
+        navigator.webkitGetUserMedia({ video: true }, function(stream) {
+          call.answer(stream); // Answer the call with an A/V stream.
+
+          call.on("stream", function(remoteStream) {
+            video.src = window.webkitURL.createObjectURL(remoteStream);
+          });
+        }, function(err) {
+          console.log('Failed to get local stream', err);
+        });
+      });
+    </script>
+  </body>
+</html>
