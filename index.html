@@ -24,12 +24,11 @@
 
       var self = getParam("self") || generateId();
       var peer = new Peer(self, { 
-        host: "localhost",
+        host: location.hostname,
         port: 9000,
-        // key: "o79zo9aet7vf5hfr", 
         secure: true,
-         debug: 3 
-       });
+        debug: 3
+      });
 
       var video = document.getElementById("display");
 
